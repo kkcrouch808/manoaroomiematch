@@ -1,4 +1,6 @@
-import { test, expect, type Page } from '@playwright/test';
+import {
+  test, expect, type APIRequestContext, type Page,
+} from '@playwright/test';
 import { ACCOUNTS, getSession, gotoHydrated, signInAsAdmin, signInAsStudent, uniqueHawaiiEmail } from './helpers';
 
 const XSS_IMG = '<img src=x onerror="window.__xss=1">';
@@ -120,5 +122,30 @@ test.describe('Malicious input is stored and shown as plain text', () => {
     // The User table still exists and normal search still works
     const normal = await page.request.get('/api/users/search?q=admin');
     expect((await normal.json()).users.length).toBeGreaterThan(0);
+  });
+});
+
+test.describe('Sign-in redirect target (next-auth redirect callback)', () => {
+  async function signInWithCallback(request: APIRequestContext, callbackUrl: string) {
+    const { csrfToken } = await (await request.get('/api/auth/csrf')).json();
+    const response = await request.post('/api/auth/callback/credentials', {
+      form: { csrfToken, ...ACCOUNTS.student, callbackUrl, json: 'true' },
+    });
+    const { url } = await response.json();
+    return new URL(url, 'http://localhost:3000');
+  }
+
+  test('an absolute external callbackUrl is replaced with the site itself', async ({ request }) => {
+    const target = await signInWithCallback(request, 'https://evil.example/phish');
+    expect(target.host).toBe('localhost:3000');
+  });
+
+  test('a protocol-relative callbackUrl does not leave the site', async ({ request }) => {
+    // KNOWN VULNERABILITY (open redirect): authOptions.redirect treats any URL starting with "/" as a safe
+    // relative path, so "//evil.example/phish" is returned unchanged and the browser goes to evil.example
+    // after a successful sign-in.
+    test.fail(true, 'KNOWN VULNERABILITY: open redirect via protocol-relative callbackUrl');
+    const target = await signInWithCallback(request, '//evil.example/phish');
+    expect(target.host).toBe('localhost:3000');
   });
 });
