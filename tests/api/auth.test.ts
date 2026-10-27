@@ -62,7 +62,7 @@ describe('POST /api/auth/change-password', () => {
   // WEAKNESS: the account is chosen by the `email` in the request body, not by the session, so a signed-in
   // user can change (or brute-force the password of) a different account. Knowing the victim's current
   // password is still required, which limits the impact.
-  test.fails('only changes the password of the signed-in account', async () => {
+  test.fails('KNOWN DEFECT: only changes the password of the signed-in account', async () => {
     prismaMock.user.findUnique.mockResolvedValue(makeUser({ id: 9, email: 'jane@hawaii.edu', password: passwordHash }));
     const response = await change({ email: 'jane@hawaii.edu', currentPassword: 'changeme', newPassword: 'pwned' });
     expect(response.status).toBe(403);

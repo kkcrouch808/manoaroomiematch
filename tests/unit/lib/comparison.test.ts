@@ -74,13 +74,13 @@ describe('buildComparisonData', () => {
 
   // KNOWN BUG: the "Noise Level" row reads scores.socialCompatibility instead of the noise score,
   // which calculateCompatibility stores in lifestyleCompatibility.
-  test.fails('the Noise Level row shows the noise score', () => {
+  test.fails('KNOWN DEFECT: the Noise Level row shows the noise score', () => {
     expect(rowFor(data, 'Noise Level').compatibility).toBe(categoryScores.lifestyleCompatibility);
   });
 
   // KNOWN BUG: the survey stores noise tolerance as 0-100, but getNoiseLabel indexes a 5-item array,
   // so any real survey answer above 5 is shown as "Unknown".
-  test.fails('a surveyed noise tolerance (e.g. 80) gets a readable label', () => {
+  test.fails('KNOWN DEFECT: a surveyed noise tolerance (e.g. 80) gets a readable label', () => {
     const surveyed = makeProfile({ noiseLevel: 80 });
     const result = buildComparisonData(surveyed, surveyed, makeMatch(surveyed, surveyed));
     expect(rowFor(result, 'Noise Level').yourValue).not.toBe('Unknown');

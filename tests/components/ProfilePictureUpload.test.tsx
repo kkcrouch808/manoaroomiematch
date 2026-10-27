@@ -124,7 +124,7 @@ describe('ProfilePictureUpload with ProfilePictureProvider', () => {
    * onloadend runs afterwards and sets the preview again permanently: the rejected image stays on screen,
    * the real photo is hidden, and the Remove button disappears.
    */
-  test.fails('a rejected image is not shown when the server answers before the preview is ready', async () => {
+  test.fails('KNOWN DEFECT: a rejected image stays hidden when the server answers before the preview', async () => {
     mockFetch({
       '/api/profile/picture': () => ({ body: { photoUrl: null } }),
       'POST /api/profile/upload-picture': () => ({

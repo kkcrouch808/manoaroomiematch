@@ -145,7 +145,8 @@ describe('GET /api/users/search treats user input as data', () => {
    * wildcards on PostgreSQL, so a search for "%" or "_" matches every active user and returns up to 20
    * emails per request. No account here has a literal % or _ in its email or name, so [] is correct.
    */
-  test.fails.each(LIKE_WILDCARDS.filter((q) => q !== '\\'))('LIKE wildcard %j is matched literally', async (q) => {
+  const wildcards = LIKE_WILDCARDS.filter((q) => q !== '\\');
+  test.fails.each(wildcards)('KNOWN DEFECT: LIKE wildcard %j is matched literally', async (q) => {
     actAs(accounts.kai);
     expect((await search(q)).users).toEqual([]);
   });
@@ -198,7 +199,7 @@ describe('reporting and moderation', () => {
    * the user may report again; admins may always file more), but schema.prisma has
    * @@unique([reported_by_user_id, reported_user_id]). The second report fails with P2002 and a 500.
    */
-  test.fails('after a report is resolved, the same student can report the user again', async () => {
+  test.fails('KNOWN DEFECT: after a report is resolved, the same student can report the user again', async () => {
     actAs(accounts.kai);
     const response = await flags.POST(json({ reportedUserId: accounts.lani.id, reason: 'still spamming' }));
     expect(response.status).toBe(201);
@@ -238,7 +239,7 @@ describe('account deletion cleans up', () => {
    * with ON DELETE RESTRICT. Anyone who has ever been moderated (or any admin who moderated) cannot delete
    * their account: the transaction fails with a foreign-key error and the route answers 500.
    */
-  test.fails('a user who has been moderated can still delete their own account', async () => {
+  test.fails('KNOWN DEFECT: a user who has been moderated can still delete their own account', async () => {
     const temp = await makeAccount('moderated', 'Moderated');
     await prisma.moderationAction.create({
       data: { targetUserId: temp.id, adminUserId: accounts.mod.id, action: 'resolve' },
@@ -251,7 +252,7 @@ describe('account deletion cleans up', () => {
    * KNOWN BUG: the admin delete route removes matches without first removing their AIExplanation rows, so a
    * user with an AI explanation on any match cannot be deleted by an admin (500, foreign-key error).
    */
-  test.fails('an admin can delete a user whose match has an AI explanation', async () => {
+  test.fails('KNOWN DEFECT: an admin can delete a user whose match has an AI explanation', async () => {
     const temp = await makeAccount('withai', 'WithAI');
     const tempProfile = await prisma.userProfile.findUniqueOrThrow({ where: { userId: temp.id } });
     const laniProfile = await prisma.userProfile.findUniqueOrThrow({ where: { userId: accounts.lani.id } });

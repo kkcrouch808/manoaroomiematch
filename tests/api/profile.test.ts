@@ -81,14 +81,14 @@ describe('POST /api/profile/upload-picture', () => {
   });
 
   // KNOWN GAP: neither this route nor imageProcessing.ts enforces the 4096px MAX_DIMENSION
-  test.fails('rejects an image that declares 100000x100000 pixels', async () => {
+  test.fails('KNOWN DEFECT: rejects an image that declares 100000x100000 pixels', async () => {
     const bomb = new File([pngWithDimensions(100_000, 100_000)], 'bomb.png', { type: 'image/png' });
     expect((await upload(bomb)).status).toBe(400);
   });
 
   // WEAKNESS: the route has its own copy of the validation and checks only the first 4 PNG bytes
   // (imageProcessing.ts checks all 8), so a file that starts with "\x89PNG" and then garbage is accepted.
-  test.fails('rejects a file with only the first 4 PNG signature bytes', async () => {
+  test.fails('KNOWN DEFECT: rejects a file with only the first 4 PNG signature bytes', async () => {
     const header = [...SIGNATURES.pngTruncated, ...textBytes('<html>')];
     const fake = new File([bytesOf(header)], 'f.png', { type: 'image/png' });
     expect((await upload(fake)).status).toBe(400);

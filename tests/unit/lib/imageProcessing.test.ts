@@ -99,7 +99,7 @@ describe('validateImageUpload', () => {
 
   // KNOWN GAP: MAX_DIMENSION (4096) and MIN_DIMENSION (100) are exported but never checked, so a tiny file
   // that declares a 100000x100000 image (a "decompression bomb" for anything that decodes it) passes.
-  test.fails('rejects a PNG that declares 100000x100000 pixels', async () => {
+  test.fails('KNOWN DEFECT: rejects a PNG that declares 100000x100000 pixels', async () => {
     const file = new File([pngWithDimensions(100_000, 100_000)], 'bomb.png', { type: 'image/png' });
     expect((await validateImageUpload(file)).valid).toBe(false);
   });

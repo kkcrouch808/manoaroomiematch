@@ -70,6 +70,6 @@ describe('middleware matcher', () => {
 // KNOWN BUG: in a project that uses `src/app`, Next.js only loads `src/middleware.ts`. This file is at the
 // repository root, so the logic above (which is correct) never runs in the real app: the build's
 // .next/server/middleware-manifest.json is empty, and the E2E admin-redirect tests fail.
-test.fails('middleware is placed where Next.js loads it for a src/ layout', () => {
+test.fails('KNOWN DEFECT: middleware is placed where Next.js loads it for a src/ layout', () => {
   expect(existsSync('src/middleware.ts')).toBe(true);
 });

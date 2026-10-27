@@ -75,7 +75,7 @@ describe('POST /api/messages/send', () => {
   });
 
   // WEAKNESS: there is no maximum message length; a 1 MB message is stored and sent to the recipient.
-  test.fails('rejects a 1 MB message', async () => {
+  test.fails('KNOWN DEFECT: rejects a 1 MB message', async () => {
     prismaMock.userProfile.findUnique.mockResolvedValue({ preferences: {} });
     expect((await sendAs({ receiverId: 7, content: OVERSIZED_STRINGS.oneMegabyte })).status).toBe(400);
   });
@@ -196,7 +196,7 @@ describe('PATCH /api/messages/mark-read', () => {
 
   // WEAKNESS (IDOR): the handler never checks that the message was sent to the caller, so any signed-in
   // user can mark anyone's messages as read, hiding them from the real recipient's unread count.
-  test.fails('only the recipient can mark a message as read', async () => {
+  test.fails('KNOWN DEFECT: only the recipient can mark a message as read', async () => {
     prismaMock.message.findUnique.mockResolvedValue({ id: 3, senderId: 7, receiverId: 8 });
     prismaMock.message.update.mockResolvedValue({ id: 3, isRead: true });
     const response = await markRead.PATCH(jsonRequest('/', { messageId: 3 }, 'PATCH'));

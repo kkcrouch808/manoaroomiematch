@@ -76,7 +76,7 @@ describe('calculateCompatibility', () => {
 
     // KNOWN BUG: `u.noiseLevel || 50` treats a real answer of 0 ("Not at all" tolerant, the slider minimum)
     // as 50, so the most noise-sensitive students look half as different from very tolerant ones.
-    test.fails('a tolerance of 0 vs 100 gets the full 50-point penalty', () => {
+    test.fails('KNOWN DEFECT: a tolerance of 0 vs 100 gets the full 50-point penalty', () => {
       const result = calculateCompatibility(makeProfile({ noiseLevel: 0 }), makeProfile({ noiseLevel: 100 }));
       expect(result.lifestyleCompatibility).toBe(50);
     });
@@ -105,12 +105,12 @@ describe('calculateCompatibility', () => {
    * 100. Together with the constant study score below, 65% of every match score is free.
    */
   describe('sleep and cleanliness use the stored integer values', () => {
-    test.fails('an early bird (1) and a night owl (5) are not 100% sleep-compatible', () => {
+    test.fails('KNOWN DEFECT: an early bird (1) and a night owl (5) are not 100% sleep-compatible', () => {
       const result = calculateCompatibility(makeProfile({ sleepSchedule: 1 }), makeProfile({ sleepSchedule: 5 }));
       expect(result.sleepCompatibility).toBeLessThan(100);
     });
 
-    test.fails('very clean (5) and very dirty (1) are not 100% cleanliness-compatible', () => {
+    test.fails('KNOWN DEFECT: very clean (5) and very dirty (1) are not 100% cleanliness-compatible', () => {
       const result = calculateCompatibility(makeProfile({ cleanliness: 5 }), makeProfile({ cleanliness: 1 }));
       expect(result.cleanlinessCompatibility).toBeLessThan(100);
     });
@@ -131,7 +131,7 @@ describe('calculateCompatibility', () => {
    * studyHabits answer is also never saved (convertSurveyToDatabase drops it).
    */
   describe('study habits', () => {
-    test.fails('study compatibility depends on the two users', () => {
+    test.fails('KNOWN DEFECT: study compatibility depends on the two users', () => {
       const quiet = makeProfile({ preferences: { studyHabits: 'quiet-study' } });
       const social = makeProfile({ preferences: { studyHabits: 'social-study' } });
       expect(calculateCompatibility(quiet, social).interestsCompatibility).toBeLessThan(100);
@@ -147,7 +147,7 @@ describe('calculateCompatibility', () => {
     });
   });
 
-  test.fails('a pair that disagrees on every survey answer scores below 50%', () => {
+  test.fails('KNOWN DEFECT: a pair that disagrees on every survey answer scores below 50%', () => {
     const a = makeProfile({
       sleepSchedule: 1, cleanliness: 5, noiseLevel: 1, socialLevel: 1, guestFrequency: 1,
     });

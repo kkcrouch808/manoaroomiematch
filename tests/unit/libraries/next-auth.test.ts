@@ -134,7 +134,7 @@ describe('redirect callback (open-redirect protection)', () => {
   test.fails.each([
     ['protocol-relative URL', '//evil.example/phish'],
     ['backslash variant', '/\\evil.example/phish'],
-  ])('%s is not allowed', (_label, url) => {
+  ])('KNOWN DEFECT: %s is not allowed', (_label, url) => {
     const target = new URL(redirect({ url, baseUrl }), baseUrl);
     expect(target.origin).toBe(baseUrl);
   });

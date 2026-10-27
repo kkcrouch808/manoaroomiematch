@@ -38,7 +38,7 @@ test.describe('Middleware and page protection', () => {
   // .next/server/middleware-manifest.json is empty), so admins can open student pages. These tests are
   // expected to fail; Playwright reports an error if one ever starts passing.
   for (const path of ['/matches', '/profile', '/messages', '/edit-profile']) {
-    test(`admin is redirected from student page ${path} to /admin`, async ({ page }) => {
+    test(`KNOWN DEFECT: admin is redirected from student page ${path} to /admin`, async ({ page }) => {
       test.fail(true, 'KNOWN BUG: middleware.ts is never loaded because it is not in src/');
       await signInAsAdmin(page);
       await page.goto(path);
@@ -140,7 +140,7 @@ test.describe('Sign-in redirect target (next-auth redirect callback)', () => {
     expect(target.host).toBe('localhost:3000');
   });
 
-  test('a protocol-relative callbackUrl does not leave the site', async ({ request }) => {
+  test('KNOWN DEFECT: a protocol-relative callbackUrl does not leave the site', async ({ request }) => {
     // KNOWN VULNERABILITY (open redirect): authOptions.redirect treats any URL starting with "/" as a safe
     // relative path, so "//evil.example/phish" is returned unchanged and the browser goes to evil.example
     // after a successful sign-in.

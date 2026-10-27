@@ -73,7 +73,7 @@ describe('GET /api/admin/flags', () => {
 
   // WEAKNESS: parseInt('abc') is NaN and Math.max(1, NaN) is NaN, so non-numeric paging reaches Prisma as
   // skip/take NaN (a 500 against a real database) instead of falling back to page 1, limit 10.
-  test.fails('non-numeric pagination falls back to the defaults', async () => {
+  test.fails('KNOWN DEFECT: non-numeric pagination falls back to the defaults', async () => {
     emptyTables();
     const response = await flags.GET(getRequest('/api/admin/flags?page=abc&limit=xyz'));
     expect((await response.json()).pagination).toMatchObject({ page: 1, limit: 10 });
@@ -216,7 +216,7 @@ describe('POST /api/admin/resolve-flag', () => {
 
   // WEAKNESS: suspend/unsuspend/deactivate/reactivate return the full Prisma User row, including the
   // bcrypt password hash, to the browser. Admin-only, but hashes should never leave the server.
-  test.fails('responses never include the password hash', async () => {
+  test.fails('KNOWN DEFECT: responses never include the password hash', async () => {
     const { body } = await readJson(await resolve({ flagId: 3, action: 'deactivate' }));
     expect(body.user).not.toHaveProperty('password');
   });

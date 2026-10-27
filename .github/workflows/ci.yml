@@ -6,8 +6,37 @@ on:
     branches: [main, master]
 
 jobs:
+  unit:
+    name: Lint + unit/API/component tests with coverage (Vitest)
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # Vitest 5 needs Node >= 22.12
+          node-version: lts/*
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run Vitest with coverage (fails on any test failure or a coverage threshold miss)
+        run: npm run test:coverage
+      - name: Write test and coverage summary
+        if: always()
+        run: node scripts/test-summary.mjs unit coverage >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-and-coverage-reports
+          path: |
+            reports/unit/
+            coverage/
+          retention-days: 30
+
   e2e:
-    name: E2E tests (Playwright, local build + Postgres)
+    name: Integration (Postgres) + E2E tests (Playwright, local build)
     timeout-minutes: 60
     runs-on: ubuntu-latest
     services:
@@ -38,27 +67,41 @@ jobs:
         run: echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
       - name: Install dependencies
         run: npm ci
-      - name: Run ESLint
-        run: npm run lint
       - name: Apply migrations
         run: npx prisma migrate deploy
+      - name: Report schema drift between prisma/migrations and schema.prisma
+        # Informational: lists what `migrate deploy` alone leaves out (see TESTING.md, "Known defects")
+        run: |
+          psql -h localhost -U postgres -c 'CREATE DATABASE shadow'
+          {
+            echo '### Schema drift not covered by prisma/migrations'
+            echo '```sql'
+            npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma \
+              --shadow-database-url postgresql://postgres@localhost:5432/shadow --script 2>/dev/null
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Sync schema drift not captured by migrations
-        # prisma/migrations is missing User.lastLogin, Message.isRead/readAt and the Flag indexes that
-        # schema.prisma declares (see TESTING.md). db push adds them so the app can run.
         run: npx prisma db push --skip-generate --accept-data-loss
       - name: Seed test accounts
         run: npx prisma db seed
+      - name: Run database integration tests
+        run: npm run test:integration
       - name: Build the app from this commit
         run: npm run build
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests against http://localhost:3000
-        run: npx playwright test
+        run: npm run test:e2e
+      - name: Write test summary
+        if: always()
+        run: node scripts/test-summary.mjs integration e2e >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: integration-and-playwright-reports
           path: |
-            playwright-report/
+            reports/integration/
             reports/e2e/
+            playwright-report/
+            test-results/
           retention-days: 30

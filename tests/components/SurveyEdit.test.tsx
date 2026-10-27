@@ -54,7 +54,7 @@ describe('SurveyEdit', () => {
 
   // KNOWN BUG: "Save Changes" only writes localStorage ("TODO: Also save to backend API"), so edited answers
   // never reach the database and the user's matches are never recalculated.
-  test.fails('saving sends the edited answers to /api/lifestyle-survey', async () => {
+  test.fails('KNOWN DEFECT: saving sends the edited answers to /api/lifestyle-survey', async () => {
     localStorage.setItem('lifestyle-survey-completed', JSON.stringify(answers));
     const fetchMock = mockFetch({ 'POST /api/lifestyle-survey': () => ({ body: { success: true } }) });
     render(<SurveyEdit />);

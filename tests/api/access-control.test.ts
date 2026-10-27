@@ -180,14 +180,14 @@ describe('match routes without authentication', () => {
     ...makeMatch(alice, bob, { id: 'm1' }), user1: alice, user2: bob,
   });
 
-  test.fails('POST /api/matches/[matchId]/ai-report requires sign-in', async () => {
+  test.fails('KNOWN DEFECT: POST /api/matches/[matchId]/ai-report requires sign-in', async () => {
     existingMatch();
     signInAs(null);
     const response = await aiReport.POST(jsonRequest('/', {}), routeParams({ matchId: 'm1' }));
     expect(response.status).toBe(401);
   });
 
-  test.fails('GET /api/matches/[matchId]/comparison requires sign-in', async () => {
+  test.fails('KNOWN DEFECT: GET /api/matches/[matchId]/comparison requires sign-in', async () => {
     existingMatch();
     signInAs(null);
     const response = await comparison.GET(getRequest('/?userId=p1'), routeParams({ matchId: 'm1' }));
