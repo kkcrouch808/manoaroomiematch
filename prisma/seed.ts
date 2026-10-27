@@ -4,12 +4,23 @@ import * as config from '../config/settings.development.json';
 
 const prisma = new PrismaClient();
 
+type SeedAccount = {
+  email: string;
+  role?: string;
+  firstName?: string;
+  lastName?: string;
+  // ISO date; accounts with a future date are seeded as suspended (used by the E2E sign-in tests)
+  suspendedUntil?: string;
+};
+
 async function main() {
   console.log('Seeding the database');
   const password = await hash('changeme', 10);
-  config.defaultAccounts.forEach(async (account) => {
+  // Upsert sequentially so every account exists before the client disconnects
+  for (const account of config.defaultAccounts as SeedAccount[]) {
     const role = account.role as Role || Role.USER;
     console.log(`  Creating user: ${account.email} with role: ${role}`);
+    // eslint-disable-next-line no-await-in-loop
     const user = await prisma.user.upsert({
       where: { email: account.email },
       update: {},
@@ -17,6 +28,7 @@ async function main() {
         email: account.email,
         password,
         role,
+        suspendedUntil: account.suspendedUntil ? new Date(account.suspendedUntil) : null,
       },
     });
 
@@ -24,6 +36,7 @@ async function main() {
     const firstName = account.firstName || account.email.split('@')[0];
     const lastName = account.lastName || 'User';
     const name = `${firstName} ${lastName}`;
+    // eslint-disable-next-line no-await-in-loop
     await prisma.userProfile.upsert({
       where: { userId: user.id },
       update: {},
@@ -35,8 +48,7 @@ async function main() {
         email: account.email,
       },
     });
-    // console.log(`  Created user: ${user.email} with role: ${user.role}`);
-  });
+  }
 }
 main()
   .then(() => prisma.$disconnect())

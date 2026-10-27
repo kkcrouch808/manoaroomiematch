@@ -4,26 +4,61 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+
 jobs:
-  test:
+  e2e:
+    name: E2E tests (Playwright, local build + Postgres)
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      # Throwaway database that exists only for this job; trust auth means no password to manage
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: manoa_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_PRISMA_URL: postgresql://postgres@localhost:5432/manoa_test
+      POSTGRES_URL_NON_POOLING: postgresql://postgres@localhost:5432/manoa_test
+      NEXTAUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: npm
+      - name: Generate a per-run NextAuth secret
+        run: echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
       - name: Run ESLint
         run: npm run lint
-      - name: Run Playwright tests
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+      - name: Sync schema drift not captured by migrations
+        # prisma/migrations is missing User.lastLogin, Message.isRead/readAt and the Flag indexes that
+        # schema.prisma declares (see TESTING.md). db push adds them so the app can run.
+        run: npx prisma db push --skip-generate --accept-data-loss
+      - name: Seed test accounts
+        run: npx prisma db seed
+      - name: Build the app from this commit
+        run: npm run build
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests against http://localhost:3000
         run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            reports/e2e/
           retention-days: 30

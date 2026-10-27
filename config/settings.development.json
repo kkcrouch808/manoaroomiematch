@@ -1,6 +1,13 @@
 {
   "defaultAccounts": [
     { "email": "admin@foo.com", "password": "changeme", "role": "ADMIN", "firstName": "Admin", "lastName": "User" },
-    { "email": "john@foo.com", "password": "changeme", "firstName": "John", "lastName": "Foo" }
+    { "email": "john@foo.com", "password": "changeme", "firstName": "John", "lastName": "Foo" },
+    {
+      "email": "suspended@foo.com",
+      "password": "changeme",
+      "firstName": "Sam",
+      "lastName": "Suspended",
+      "suspendedUntil": "2099-12-31T00:00:00.000Z"
+    }
   ]
 }

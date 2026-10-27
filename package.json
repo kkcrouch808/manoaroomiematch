@@ -7,7 +7,8 @@
     "dev-https": "next dev --experimental-https",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --dir src --dir tests --dir prisma --file middleware.ts --file playwright.config.ts",
+    "test:e2e": "playwright test",
     "playwright-development": "npx playwright test"
   },
   "prisma": {
