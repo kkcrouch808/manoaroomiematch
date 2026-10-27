@@ -48,3 +48,7 @@ settings.production.json
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/reports/
+# Saved browser sessions contain cookies/CSRF tokens and must never be committed
+tests/playwright-auth-sessions/
+/.vitest/

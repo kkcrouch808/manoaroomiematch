@@ -7,7 +7,12 @@
     "dev-https": "next dev --experimental-https",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --dir src --dir tests --dir prisma --file middleware.ts --file playwright.config.ts --file vitest.config.mts --file vitest.integration.config.mts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "test:e2e": "playwright test",
     "playwright-development": "npx playwright test"
   },
   "prisma": {
@@ -37,20 +42,29 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.5.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/ui": "^5.0.5",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-next": "^15.5.6",
     "eslint-config-prettier": "^9.1.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.3.1",
     "prettier-eslint": "^16.3.0",
     "prisma": "^6.19.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^5.0.5"
   }
 }

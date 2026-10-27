@@ -3,48 +3,21 @@
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
 import { Card, Col, Container, Button, Form, Row, Alert, ProgressBar } from 'react-bootstrap';
 import { createUser } from '@/lib/dbActions';
+import { signUpSchema, type SignUpForm } from '@/lib/validation/signup';
 import { useState, useEffect } from 'react';
 import { PersonFill, EnvelopeFill, LockFill } from 'react-bootstrap-icons';
 
-type SignUpForm = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  // acceptTerms: boolean;
-};
 /** The sign up page. */
 const SignUp = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const schema = Yup.object().shape({
-    firstName: Yup.string().required('First Name is required'),
-    lastName: Yup.string().required('Last Name is required'),
-    email: Yup.string()
-      .required('Email is required')
-      .email('Email is invalid')
-      .test('is-hawaii-edu', 'Only @hawaii.edu emails are allowed', (value) => {
-        if (!value) return false;
-        return value.toLowerCase().endsWith('@hawaii.edu');
-      }),
-    password: Yup.string()
-      .required('Password is required')
-      .min(6, 'Password must be at least 6 characters')
-      .max(40, 'Password must not exceed 40 characters'),
-    confirmPassword: Yup.string()
-      .required('Confirm Password is required')
-      .oneOf([Yup.ref('password'), ''], 'Confirm Password does not match'),
-  });
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<SignUpForm>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(signUpSchema),
   });
 
   const [isLoading, setIsLoading] = useState(false);

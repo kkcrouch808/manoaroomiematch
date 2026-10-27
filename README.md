@@ -2,6 +2,10 @@
 
 For details, please see http://ics-software-engineering.github.io/nextjs-application-template/.
 
+## Testing
+
+See [TESTING.md](TESTING.md) for how to run the unit, API, component, integration and end-to-end tests, where the reports go, and the defects the tests document.
+
 ## AI Configuration
 
 To enable a specific AI model for all clients (for example: Claude Haiku 4.5), this project uses a small config file and optional environment variables.
