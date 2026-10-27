@@ -32,6 +32,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "vitest.config.mts",
+    "vitest.integration.config.mts",
     ".next/types/**/*.ts"
   ],
   "exclude": [
